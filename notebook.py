@@ -1,3 +1,3 @@
-from house_price.data_processor import DataProcessor
+from nyctaxi.data_processor import DataProcessor
 
 
