@@ -6,10 +6,6 @@ parameters:
   n_estimators: 1000
   max_depth: 6
 
-timestamp_features:
-  - tpep_pickup_datetime
-  - tpep_dropoff_datetime
-
 num_features:
   - trip_distance
   - pickup_zip

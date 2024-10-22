@@ -46,4 +46,8 @@ print("Test set shape:", test_data.count(), "rows")
 
 # COMMAND ----------
 
+train_data.display()
+
+# COMMAND ----------
+
 
