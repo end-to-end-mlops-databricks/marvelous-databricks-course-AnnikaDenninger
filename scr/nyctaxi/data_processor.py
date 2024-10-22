@@ -7,7 +7,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 class DataProcessor:
-    def __init__(self, filepath, config):
+    def __init__(self, spark, filepath, config):
+        self.spark = spark
         self.df = self.load_data(filepath)
         self.config = config
         self.X = None
@@ -15,7 +16,8 @@ class DataProcessor:
         self.preprocessor = None
 
     def load_data(self, filepath):
-        return pd.read_csv(filepath)
+        #return pd.read_csv(filepath)
+        return spark.read.format("delta").load(filepath)
 
     def preprocess_data(self):
         # Remove rows with missing target
