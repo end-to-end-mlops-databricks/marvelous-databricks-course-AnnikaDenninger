@@ -1,41 +1,21 @@
-catalog_name: marvelous_mlops
-schema_name: house_prices
+catalog_name: samples
+schema_name: nyctaxt
 
 parameters:
   learning_rate: 0.01
   n_estimators: 1000
   max_depth: 6
 
+timestamp_features:
+  - tpep_pickup_datetime
+  - tpep_dropoff_datetime
+
 num_features:
-  - LotArea
-  - OverallQual
-  - OverallCond
-  - YearBuilt
-  - YearRemodAdd
-  - MasVnrArea
-  - TotalBsmtSF
-  - GrLivArea
-  - GarageCars
-  - GarageArea
+  - trip_distance
+  - pickup_zip
+  - dropoff_zip
+ 
+#cat_features:
+  #- cat_feature
 
-cat_features:
-  - MSZoning
-  - Street
-  - Alley
-  - LotShape
-  - LandContour
-  - Neighborhood
-  - Condition1
-  - BldgType
-  - HouseStyle
-  - RoofStyle
-  - Exterior1st
-  - Exterior2nd
-  - MasVnrType
-  - Foundation
-  - Heating
-  - CentralAir
-  - SaleType
-  - SaleCondition
-
-target: SalePrice
+target: fare_amount

@@ -1,4 +1,9 @@
 # Databricks notebook source
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.getOrCreate()
+
+# COMMAND ----------
+
 # MAGIC %pip install /Volumes/main/default/file_exchange/denninger/mlops_with_databricks-0.0.1-py3-none-any.whl
 
 # COMMAND ----------
@@ -9,10 +14,6 @@ dbutils.library.restartPython()
 
 # MAGIC %pip install pyyaml
 # MAGIC import yaml
-
-# COMMAND ----------
-
-spark = DatabricksSession.builder.profile("adb-6130442328907134").getOrCreate()
 
 # COMMAND ----------
 
@@ -29,16 +30,8 @@ print(yaml.dump(config, default_flow_style=False))
 
 # COMMAND ----------
 
-data_processor = DataProcessor("dbfs:/databricks-datasets/nyctaxi-with-zipcodes/subsampled", config)
+data_processor = DataProcessor(spark, "dbfs:/databricks-datasets/nyctaxi-with-zipcodes/subsampled", config)
 
-
-# COMMAND ----------
-
-#df = spark.read.format("delta").load("dbfs:/databricks-datasets/nyctaxi-with-zipcodes/subsampled")
-
-# COMMAND ----------
-
-#df.display()
 
 # COMMAND ----------
 
@@ -46,4 +39,11 @@ data_processor.preprocess_data()
 
 # COMMAND ----------
 
-X_train, X_test, y_train, y_test = data_processor.split_data()
+train_data, test_data = data_processor.split_data()
+
+print("Training set shape:", train_data.count(), "rows")
+print("Test set shape:", test_data.count(), "rows")
+
+# COMMAND ----------
+
+
