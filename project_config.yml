@@ -1,5 +1,5 @@
 catalog_name: samples
-schema_name: nyctaxt
+schema_name: nyctaxi
 
 parameters:
   learning_rate: 0.01
