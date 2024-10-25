@@ -18,3 +18,5 @@ cat_features:
   - pickup_zip
 
 target: fare_amount
+
+mlflow_experiment_name: /Shared/mlops_course_annika

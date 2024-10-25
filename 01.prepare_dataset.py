@@ -3,9 +3,6 @@
 from nyctaxi.data_processor import DataProcessor
 import yaml
 
-#from pyspark.sql import SparkSession
-#spark = SparkSession.builder.getOrCreate()
-
 # COMMAND ----------
 
 # Load configuration
@@ -14,17 +11,6 @@ with open("project_config.yml", "r") as file:
 
 print("Configuration loaded:")
 print(yaml.dump(config, default_flow_style=False))
-#config = ProjectConfig.from_yaml(config_path="../../project_config.yml")
-
-# COMMAND ----------
-# Load the house prices dataset
-#df = spark.read.csv(
-    #"/Volumes/mlops_dev/nyctaxis/data/data.csv",
-    #header=True,
-    #inferSchema=True).toPandas()
-
-#tablepath = "samples.nyctaxi.trips"
-#df = spark.sql(f"SELECT * FROM {tablepath}").toPandas()
 
 # COMMAND ----------
 
