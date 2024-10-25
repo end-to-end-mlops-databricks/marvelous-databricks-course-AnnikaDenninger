@@ -1,25 +1,6 @@
-# Databricks notebook source
-from pyspark.sql import SparkSession
-spark = SparkSession.builder.getOrCreate()
+import yaml
+from nyctaxi.data_processor import DataProcessor
 
-# COMMAND ----------
-
-# MAGIC %pip install /Volumes/main/default/file_exchange/denninger/mlops_with_databricks-0.0.1-py3-none-any.whl
-
-# COMMAND ----------
-
-dbutils.library.restartPython()
-
-# COMMAND ----------
-
-# MAGIC %pip install pyyaml
-# MAGIC import yaml
-
-# COMMAND ----------
-
-from scr.nyctaxi.data_processor import DataProcessor
-
-# COMMAND ----------
 
 # Load configuration
 with open("project_config.yml", "r") as file:
@@ -28,26 +9,31 @@ with open("project_config.yml", "r") as file:
 print("Configuration loaded:")
 print(yaml.dump(config, default_flow_style=False))
 
-# COMMAND ----------
 
-data_processor = DataProcessor(spark, "dbfs:/databricks-datasets/nyctaxi-with-zipcodes/subsampled", config)
+# Initialize DataProcessor
+data_processor = DataProcessor("samples.nyctaxi.trips", config)
 
-
-# COMMAND ----------
-
+# Preprocess the data
 data_processor.preprocess_data()
 
-# COMMAND ----------
+# Split the data
+X_train, X_test, y_train, y_test = data_processor.split_data()
 
-train_data, test_data = data_processor.split_data()
+print("Training set shape:", X_train.shape)
+print("Test set shape:", X_test.shape)
 
-print("Training set shape:", train_data.count(), "rows")
-print("Test set shape:", test_data.count(), "rows")
-
-# COMMAND ----------
-
-train_data.display()
-
-# COMMAND ----------
+# # Initialize and train the model
+# model = PriceModel(data_processor.preprocessor, config)
+# model.train(X_train, y_train)
 
 
+# # Evaluate the model
+# mse, r2 = model.evaluate(X_test, y_test)
+
+# ## Visualizing Results
+# y_pred = model.predict(X_test)
+# visualize_results(y_test, y_pred)
+
+# ## Feature Importance
+# feature_importance, feature_names = model.get_feature_importance()
+# plot_feature_importance(feature_importance, feature_names)

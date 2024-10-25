@@ -8,10 +8,9 @@ parameters:
 
 num_features:
   - trip_distance
-  - pickup_zip
+
+cat_features:
   - dropoff_zip
- 
-#cat_features:
-  #- cat_feature
+  - pickup_zip
 
 target: fare_amount

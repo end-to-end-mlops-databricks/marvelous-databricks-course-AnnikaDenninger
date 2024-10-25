@@ -1,5 +1,5 @@
 [project]
-name = "nyc-taxi"
+name = "nyctaxi"
 version = "0.0.1"
 description = "New York City Taxi Project"
 readme = "README.md"
