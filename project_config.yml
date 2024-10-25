@@ -1,5 +1,9 @@
-catalog_name: samples
-schema_name: nyctaxi
+read_from:
+  catalog_name: samples
+  schema_name: nyctaxi
+
+catalog_name: sandbox
+schema_name: sb_adan
 
 parameters:
   learning_rate: 0.01
