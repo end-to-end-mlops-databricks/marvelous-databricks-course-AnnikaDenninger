@@ -1,0 +1,16 @@
+catalog_name: samples
+schema_name: nyctaxi
+
+parameters:
+  learning_rate: 0.01
+  n_estimators: 1000
+  max_depth: 6
+
+num_features:
+  - trip_distance
+
+cat_features:
+  - dropoff_zip
+  - pickup_zip
+
+target: fare_amount
