@@ -1,0 +1,18 @@
+{
+    "_name": "sandbox.sb_adan.nyctaxi_model_pyfunc",
+    "_version": "2",
+    "_creation_time": 1730296640900,
+    "_last_updated_timestamp": 1730296642838,
+    "_description": "",
+    "_user_id": "annika.denninger@unicef.de",
+    "_current_stage": null,
+    "_source": "dbfs:/databricks/mlflow-tracking/1405573718559061/f87e95862a584b2292278a43889d9895/artifacts/lightgbm-pipeline-model",
+    "_run_id": "f87e95862a584b2292278a43889d9895",
+    "_run_link": null,
+    "_status": "READY",
+    "_status_message": "",
+    "_tags": {
+        "git_sha": "blub"
+    },
+    "_aliases": []
+}
