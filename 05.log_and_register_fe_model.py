@@ -20,7 +20,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from datetime import datetime
 from databricks.feature_engineering import FeatureFunction, FeatureLookup
-#from house_price.config import ProjectConfig
+from nyctaxi.config import ProjectConfig
 
 
 # Initialize the Databricks session and clients
@@ -32,33 +32,23 @@ fe = feature_engineering.FeatureEngineeringClient()
 
 # COMMAND ----------
 
-mlflow.set_registry_uri("databricks-uc")
-mlflow.set_tracking_uri("databricks")
+#mlflow.set_tracking_uri("databricks")
+mlflow.set_tracking_uri("databricks://adb-6130442328907134")
+#mlflow.set_registry_uri('databricks-uc') 
+mlflow.set_registry_uri('databricks-uc://adb-6130442328907134') # It must be -uc for registering models to Unity Catalog
+
 
 # Load configuration
-with open("project_config.yml", "r") as file:
-    config = yaml.safe_load(file)
-
-print("Configuration loaded:")
-print(yaml.dump(config, default_flow_style=False))
-#config = ProjectConfig.from_yaml(config_path="../../project_config.yml")
+config = ProjectConfig.from_yaml(config_path="project_config.yml")
 
 # Extract configuration details
-num_features = config['num_features']
-cat_features = config['cat_features']
-cat_targetfeatures = config['target']
-parameters = config['parameters']
-catalog_name = config['catalog_name']
-schema_name = config['schema_name']
-mlflow_experiment_name = config['mlflow_experiment_name']
-
-#num_features = config.num_features
-#cat_features = config.cat_features
-#target = config.target
-#parameters = config.parameters
-#catalog_name = config.catalog_name
-#schema_name = config.schema_name
-#mlflow_experiment_name = config.mlflow_experiment_name
+num_features = config.num_features
+cat_features = config.cat_features
+target = config.target
+parameters = config.parameters
+catalog_name = config.catalog_name
+schema_name = config.schema_name
+mlflow_experiment_name = config.mlflow_experiment_name
 
 # Define table names and function name
 feature_table_name = f"{catalog_name}.{schema_name}.features_an"
@@ -87,9 +77,9 @@ spark.sql(f"ALTER TABLE {catalog_name}.{schema_name}.features_an "
 
 # Insert data into the feature table from both train and test sets
 spark.sql(f"INSERT INTO {catalog_name}.{schema_name}.features_an "
-          f"SELECT pickup_zip, trip_distance FROM {catalog_name}.{schema_name}.train_set")
+          f"SELECT pickup_zip, trip_distance FROM {catalog_name}.{schema_name}.train_set_an")
 spark.sql(f"INSERT INTO {catalog_name}.{schema_name}.features_an "
-          f"SELECT pickup_zip, trip_distance FROM {catalog_name}.{schema_name}.test_set")
+          f"SELECT pickup_zip, trip_distance FROM {catalog_name}.{schema_name}.test_set_an")
 
 # COMMAND ----------
 # Define a function to calculate the length of travel time based on tpep_pickup_datetime and tpep_dropoff_datetime 
@@ -98,27 +88,24 @@ CREATE OR REPLACE FUNCTION {function_name}(tpep_pickup_datetime TIMESTAMP, tpep_
 RETURNS INT
 LANGUAGE PYTHON AS
 $$
-from datetime import datetime
+from pyspark.sql.functions import col, unix_timestamp
 
-pickup_time = tpep_pickup_datetime
-dropoff_time = tpep_dropoff_datetime
-
-time_difference = dropoff_time - pickup_time
-minutes_difference = int(time_difference.total_seconds() / 60)
-
-return minutes_difference
+time_difference_seconds = (
+    unix_timestamp(col("tpep_dropoff_datetime")) - unix_timestamp(col("tpep_pickup_datetime"))
+)
+return time_difference_seconds / 60
 $$
 """)
 
 # COMMAND ----------
 # Load training and test sets
-train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").drop("trip_distance")
-test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
+train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").drop("trip_distance")
+test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an").toPandas()
 
 # Cast YearBuilt to int for the function input
-train_set = train_set.withColumn("tpep_pickup_datetime", train_set["tpep_pickup_datetime"])
-train_set = train_set.withColumn("tpep_dropoff_datetime", train_set["tpep_dropoff_datetime"])
-train_set = train_set.withColumn("pickup_zip", train_set["pickup_zip"].cast("string"))
+#train_set = train_set.withColumn("tpep_pickup_datetime", train_set["tpep_pickup_datetime"])
+#train_set = train_set.withColumn("tpep_dropoff_datetime", train_set["tpep_dropoff_datetime"])
+#train_set = train_set.withColumn("pickup_zip", train_set["pickup_zip"].cast("string"))
 
 # Feature engineering setup
 training_set = fe.create_training_set(
@@ -143,21 +130,23 @@ training_set = fe.create_training_set(
 training_df = training_set.load_df().toPandas()
 
 # Split features and target
-X_train = training_df[num_features + cat_features]
+X_train = training_df[num_features]
 y_train = training_df[target]
-X_test = test_set[num_features + cat_features]
+X_test = test_set[num_features]
 y_test = test_set[target]
 
 # Setup preprocessing and model pipeline
-preprocessor = ColumnTransformer(
-    transformers=[("cat", OneHotEncoder(handle_unknown="ignore"), cat_features)], remainder="passthrough"
-)
+#preprocessor = ColumnTransformer(
+    #transformers=[("cat", OneHotEncoder(handle_unknown="ignore"), cat_features)], remainder="passthrough"
+#)
 pipeline = Pipeline(
-    steps=[("preprocessor", preprocessor), ("regressor", LGBMRegressor(**parameters))]
+    steps=[
+        #("preprocessor", preprocessor), 
+        ("regressor", LGBMRegressor(**parameters))]
 )
 
 # Set and start MLflow experiment
-mlflow.set_experiment(experiment_name="/Shared/house-prices-fe")
+mlflow.set_experiment(experiment_name="/Shared/mlops_course_annika-fe")
 git_sha = "blub"
 
 with mlflow.start_run(tags={"branch": "week2",
@@ -192,5 +181,5 @@ with mlflow.start_run(tags={"branch": "week2",
     )
 mlflow.register_model(
     model_uri=f'runs:/{run_id}/lightgbm-pipeline-model-fe',
-    name=f"{catalog_name}.{schema_name}.house_prices_model_fe")
+    name=f"{catalog_name}.{schema_name}.nyctaxi_model_fe")
     
