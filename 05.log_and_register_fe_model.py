@@ -1,11 +1,12 @@
 # Databricks notebook source
-# MAGIC %pip install ../housing_price-0.0.1-py3-none-any.whl
+# MAGIC %pip install /Volumes/main/default/file_exchange/denninger/nyc_taxi-0.0.1-py3-none-any.whl
 
 # COMMAND ----------
 
 dbutils.library.restartPython() 
 
 # COMMAND ----------
+
 import yaml
 from databricks import feature_engineering
 from pyspark.sql import SparkSession
@@ -27,8 +28,6 @@ from nyctaxi.config import ProjectConfig
 spark = SparkSession.builder.getOrCreate()
 workspace = WorkspaceClient()
 fe = feature_engineering.FeatureEngineeringClient()
-
-# COMMAND ----------
 
 # COMMAND ----------
 
@@ -56,16 +55,18 @@ function_name = f"{catalog_name}.{schema_name}.calculate_travel_time"
 
 
 # COMMAND ----------
+
 # Load training and test sets
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an")
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an")
 
 
 # COMMAND ----------
+
 # Create or replace the features_an table
 spark.sql(f"""
 CREATE OR REPLACE TABLE {catalog_name}.{schema_name}.features_an
-(pickup_zip STRING NOT NULL,
+(pickup_zip INT NOT NULL,
  trip_distance INT);
 """)
 
@@ -82,23 +83,21 @@ spark.sql(f"INSERT INTO {catalog_name}.{schema_name}.features_an "
           f"SELECT pickup_zip, trip_distance FROM {catalog_name}.{schema_name}.test_set_an")
 
 # COMMAND ----------
+
 # Define a function to calculate the length of travel time based on tpep_pickup_datetime and tpep_dropoff_datetime 
 spark.sql(f"""
 CREATE OR REPLACE FUNCTION {function_name}(tpep_pickup_datetime TIMESTAMP, tpep_dropoff_datetime TIMESTAMP)
 RETURNS INT
 LANGUAGE PYTHON AS
 $$
-from pyspark.sql.functions import col, unix_timestamp
-
-time_difference_seconds = (
-    unix_timestamp(col("tpep_dropoff_datetime")) - unix_timestamp(col("tpep_pickup_datetime"))
-)
-return time_difference_seconds / 60
+    time_difference_seconds = (tpep_dropoff_datetime - tpep_pickup_datetime).total_seconds()
+    return int(time_difference_seconds / 60)
 $$
 """)
 
 
 # COMMAND ----------
+
 # Load training and test sets
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").drop("trip_distance")
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an").toPandas()
