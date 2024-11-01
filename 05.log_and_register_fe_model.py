@@ -97,6 +97,7 @@ return time_difference_seconds / 60
 $$
 """)
 
+
 # COMMAND ----------
 # Load training and test sets
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").drop("trip_distance")
