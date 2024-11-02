@@ -68,8 +68,8 @@ feature_table_name = f"{catalog_name}.{schema_name}.nyctaxi_preds"
 online_table_name = f"{catalog_name}.{schema_name}.nyctaxi_preds_online"
 
 # Load training and test sets from Catalog
-train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
-test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
+train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").toPandas()
+test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an").toPandas()
 
 df = pd.concat([train_set, test_set])
 
@@ -91,8 +91,21 @@ preds_df["predicted_fare_amount"] = pipeline.predict(df[num_features])
 
 preds_df = spark.createDataFrame(preds_df)
 
-# 1. Create the feature table in Databricks
+# COMMAND ----------
 
+# Clean up so that the key pickup_zip only only has onw row
+from pyspark.sql.functions import row_number
+from pyspark.sql.window import Window
+
+window = Window.partitionBy("pickup_zip").orderBy("trip_distance")
+preds_df = preds_df.withColumn("row_number", row_number().over(window))
+preds_df = preds_df.filter(preds_df.row_number == 1).drop("row_number")
+
+display(preds_df)
+
+# COMMAND ----------
+
+# 1. Create the feature table in Databricks
 fe.create_table(
     name=feature_table_name, primary_keys=["pickup_zip"], df=preds_df, description="New York City Taxi predictions feature table"
 )
@@ -106,7 +119,6 @@ spark.sql(f"""
 # COMMAND ----------
 
 # 2. Create the online table using feature table
-
 spec = OnlineTableSpec(
     primary_key_columns=["pickup_zip"],
     source_table_full_name=feature_table_name,
@@ -118,7 +130,8 @@ spec = OnlineTableSpec(
 online_table_pipeline = workspace.online_tables.create(name=online_table_name, spec=spec)
 
 # COMMAND ----------
-# 3. Create feture look up and feature spec table feature table
+
+# 3. Create feature look up and feature spec table feature table
 
 # Define features to look up from the feature table
 features = [
@@ -138,7 +151,8 @@ fe.create_feature_spec(name=feature_spec_name, features=features, exclude_column
 # MAGIC ## Deploy Feature Serving Endpoint
 
 # COMMAND ----------
-# 4. Create endpoing using feature spec
+
+# 4. Create endpoint using feature spec
 
 # Create a serving endpoint for the house prices predictions
 workspace.serving_endpoints.create(
@@ -161,17 +175,12 @@ workspace.serving_endpoints.create(
 
 # COMMAND ----------
 
-
-# COMMAND ----------
-
 token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()
 host = spark.conf.get("spark.databricks.workspaceUrl")
 
 # COMMAND ----------
 
-id_list = preds_df["Id"]
-
-# COMMAND ----------
+id_list = preds_df["pickup_zip"]
 
 # COMMAND ----------
 
@@ -192,21 +201,23 @@ print("Execution time:", execution_time, "seconds")
 
 
 # COMMAND ----------
-# another way to call the endpoint
 
+# another way to call the endpoint
 response = requests.post(
     f"{serving_endpoint}",
     headers={"Authorization": f"Bearer {token}"},
     json={"dataframe_split": {"columns": ["pickup_zip"], "data": [["10119"]]}},
 )
 
-# MAGIC %md
-# MAGIC ## Load Test
+print("Response status:", response.status_code)
+print("Reponse text:", response.text)
+print("Execution time:", execution_time, "seconds")
 
 # COMMAND ----------
+
 # Initialize variables
 serving_endpoint = f"https://{host}/serving-endpoints/house-prices-feature-serving/invocations"
-id_list = preds_df.select("Id").rdd.flatMap(lambda x: x).collect()
+id_list = preds_df.select("pickup_zip").rdd.flatMap(lambda x: x).collect()
 headers = {"Authorization": f"Bearer {token}"}
 num_requests = 10
 
@@ -218,7 +229,7 @@ def send_request():
     response = requests.post(
         serving_endpoint,
         headers=headers,
-        json={"dataframe_records": [{"Id": random_id}]},
+        json={"dataframe_records": [{"pickup_zip": random_id}]},
     )
     end_time = time.time()
     latency = end_time - start_time  # Calculate latency for this request
@@ -245,3 +256,7 @@ average_latency = sum(latencies) / len(latencies)
 
 print("\nTotal execution time:", total_execution_time, "seconds")
 print("Average latency per request:", average_latency, "seconds")
+
+# COMMAND ----------
+
+
