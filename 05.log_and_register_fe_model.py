@@ -31,11 +31,10 @@ fe = feature_engineering.FeatureEngineeringClient()
 
 # COMMAND ----------
 
-#mlflow.set_tracking_uri("databricks")
-mlflow.set_tracking_uri("databricks://adb-6130442328907134")
-#mlflow.set_registry_uri('databricks-uc') 
-mlflow.set_registry_uri('databricks-uc://adb-6130442328907134') # It must be -uc for registering models to Unity Catalog
-
+mlflow.set_tracking_uri("databricks")
+#mlflow.set_tracking_uri("databricks://adb-6130442328907134")
+mlflow.set_registry_uri('databricks-uc') 
+#mlflow.set_registry_uri('databricks-uc://adb-6130442328907134') # It must be -uc for registering models to Unity Catalog
 
 # Load configuration
 config = ProjectConfig.from_yaml(config_path="project_config.yml")
@@ -90,11 +89,12 @@ CREATE OR REPLACE FUNCTION {function_name}(tpep_pickup_datetime TIMESTAMP, tpep_
 RETURNS INT
 LANGUAGE PYTHON AS
 $$
-    time_difference_seconds = (tpep_dropoff_datetime - tpep_pickup_datetime).total_seconds()
-    return int(time_difference_seconds / 60)
+    from pyspark.sql.functions import unix_timestamp
+
+    time_difference_seconds = unix_timestamp(df['tpep_dropoff_datetime']) - unix_timestamp(df['tpep_pickup_datetime'])
+    return time_difference_seconds / 60
 $$
 """)
-
 
 # COMMAND ----------
 
@@ -102,10 +102,7 @@ $$
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").drop("trip_distance")
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an").toPandas()
 
-# Cast YearBuilt to int for the function input
-#train_set = train_set.withColumn("tpep_pickup_datetime", train_set["tpep_pickup_datetime"])
-#train_set = train_set.withColumn("tpep_dropoff_datetime", train_set["tpep_dropoff_datetime"])
-#train_set = train_set.withColumn("pickup_zip", train_set["pickup_zip"].cast("string"))
+# COMMAND ----------
 
 # Feature engineering setup
 training_set = fe.create_training_set(
@@ -126,6 +123,8 @@ training_set = fe.create_training_set(
     exclude_columns=["update_timestamp_utc"]
 )
 
+# COMMAND ----------
+
 # Load feature-engineered DataFrame
 training_df = training_set.load_df().toPandas()
 
@@ -134,6 +133,8 @@ X_train = training_df[num_features]
 y_train = training_df[target]
 X_test = test_set[num_features]
 y_test = test_set[target]
+
+# COMMAND ----------
 
 # Setup preprocessing and model pipeline
 #preprocessor = ColumnTransformer(
@@ -145,9 +146,13 @@ pipeline = Pipeline(
         ("regressor", LGBMRegressor(**parameters))]
 )
 
+# COMMAND ----------
+
 # Set and start MLflow experiment
 mlflow.set_experiment(experiment_name="/Shared/mlops_course_annika-fe")
 git_sha = "blub"
+
+# COMMAND ----------
 
 with mlflow.start_run(tags={"branch": "week2",
                             "git_sha": f"{git_sha}"}) as run:
@@ -179,6 +184,9 @@ with mlflow.start_run(tags={"branch": "week2",
         training_set=training_set,
         signature=signature,
     )
+
+# COMMAND ----------
+
 mlflow.register_model(
     model_uri=f'runs:/{run_id}/lightgbm-pipeline-model-fe',
     name=f"{catalog_name}.{schema_name}.nyctaxi_model_fe")
