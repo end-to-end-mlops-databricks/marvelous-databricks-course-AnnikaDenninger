@@ -89,10 +89,9 @@ CREATE OR REPLACE FUNCTION {function_name}(tpep_pickup_datetime TIMESTAMP, tpep_
 RETURNS INT
 LANGUAGE PYTHON AS
 $$
-    from pyspark.sql.functions import unix_timestamp
 
-    time_difference_seconds = unix_timestamp(df['tpep_dropoff_datetime']) - unix_timestamp(df['tpep_pickup_datetime'])
-    return time_difference_seconds / 60
+    time_difference_seconds = (tpep_dropoff_datetime - tpep_pickup_datetime).total_seconds()
+    return int(time_difference_seconds / 60)
 $$
 """)
 
