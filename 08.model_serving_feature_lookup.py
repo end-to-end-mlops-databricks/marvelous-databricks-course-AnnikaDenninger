@@ -1,14 +1,15 @@
 # Databricks notebook source
-# MAGIC %pip install ../housing_price-0.0.1-py3-none-any.whl
+# MAGIC %pip install /Volumes/main/default/file_exchange/denninger/nyc_taxi-0.0.1-py3-none-any.whl
 
 # COMMAND ----------
+
 # MAGIC %restart_python
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Create Online Table for house features
-# MAGIC We already created house_features table as feature look up table.
+# MAGIC ## Create Online Table for nyctaxis
+# MAGIC I already created features_an table as feature look up table.
 
 # COMMAND ----------
 
@@ -41,7 +42,7 @@ schema_name = config.schema_name
 
 online_table_name = f"{catalog_name}.{schema_name}.features_an_online"
 spec = OnlineTableSpec(
-    primary_key_columns=["trip_distance"],
+    primary_key_columns=["pickup_zip"],
     source_table_full_name=f"{catalog_name}.{schema_name}.features_an",
     run_triggered=OnlineTableSpecTriggeredSchedulingPolicy.from_dict({"triggered": "true"}),
     perform_full_copy=False,
@@ -90,9 +91,12 @@ host = spark.conf.get("spark.databricks.workspaceUrl")
 
 # COMMAND ----------
 
-# Excluding "OverallQual", "GrLivArea", "GarageCars" because they will be taken from feature look up
+# Excluding "trip_distance" because it will be taken from feature look up
 required_columns = [
-    "pickup_zip"
+    "pickup_zip",
+    'tpep_pickup_datetime', 
+    'tpep_dropoff_datetime', 
+    'dropoff_zip'
 ]
 
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").toPandas()
@@ -109,10 +113,13 @@ train_set.dtypes
 dataframe_records[0]
 
 # COMMAND ----------
+
 start_time = time.time()
 
 model_serving_endpoint = f"https://{host}/serving-endpoints/nyctaxi-model-serving-fe/invocations"
 
+# THIS DOE NOT RUN BECAUSE I HAVE TIMESTAMPS AS AN INPUT AND IT ONLY ACCEPTS STRINGS AND INTEGERS!!!!
+# TypeError: Object of type Timestamp is not JSON serializable
 response = requests.post(
     f"{model_serving_endpoint}",
     headers={"Authorization": f"Bearer {token}"},
@@ -133,3 +140,7 @@ nyctaxi_features = spark.table(f"{catalog_name}.{schema_name}.features_an").toPa
 # COMMAND ----------
 
 nyctaxi_features.dtypes
+
+# COMMAND ----------
+
+
