@@ -1,5 +1,5 @@
-catalog_name: samples
-schema_name: nyctaxi
+catalog_name: sandbox
+schema_name: sb_adan
 
 parameters:
   learning_rate: 0.01
@@ -10,7 +10,11 @@ num_features:
   - trip_distance
 
 cat_features:
-  - dropoff_zip
   - pickup_zip
+  - dropoff_zip
 
 target: fare_amount
+
+id_col: pickup_zip
+
+mlflow_experiment_name: /Shared/mlops_course_annika

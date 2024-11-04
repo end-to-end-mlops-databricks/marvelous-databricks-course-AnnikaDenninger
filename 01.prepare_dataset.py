@@ -1,6 +1,9 @@
-import yaml
-from nyctaxi.data_processor import DataProcessor
 
+ # Databricks notebook source
+from nyctaxi.data_processor import DataProcessor
+import yaml
+
+# COMMAND ----------
 
 # Load configuration
 with open("project_config.yml", "r") as file:
@@ -9,31 +12,12 @@ with open("project_config.yml", "r") as file:
 print("Configuration loaded:")
 print(yaml.dump(config, default_flow_style=False))
 
+# COMMAND ----------
 
-# Initialize DataProcessor
 data_processor = DataProcessor("samples.nyctaxi.trips", config)
-
-# Preprocess the data
+#data_processor = DataProcessor(pandas_df=df, config=config)
 data_processor.preprocess_data()
+#train_set, test_set = data_processor.split_data()
+train_set, test_set = data_processor.split_data()
 
-# Split the data
-X_train, X_test, y_train, y_test = data_processor.split_data()
-
-print("Training set shape:", X_train.shape)
-print("Test set shape:", X_test.shape)
-
-# # Initialize and train the model
-# model = PriceModel(data_processor.preprocessor, config)
-# model.train(X_train, y_train)
-
-
-# # Evaluate the model
-# mse, r2 = model.evaluate(X_test, y_test)
-
-# ## Visualizing Results
-# y_pred = model.predict(X_test)
-# visualize_results(y_test, y_pred)
-
-# ## Feature Importance
-# feature_importance, feature_names = model.get_feature_importance()
-# plot_feature_importance(feature_importance, feature_names)
+data_processor.save_to_catalog(train_set=train_set, test_set=test_set, spark=spark)
