@@ -1,10 +1,12 @@
 # Databricks notebook source
-# MAGIC %pip install ../housing_price-0.0.1-py3-none-any.whl
+# MAGIC %pip install /Volumes/main/default/file_exchange/denninger/nyc_taxi-0.0.1-py3-none-any.whl
 
 # COMMAND ----------
+
 # MAGIC %restart_python
 
 # COMMAND ----------
+
 import time
 
 import mlflow
@@ -235,11 +237,13 @@ class NYCTaxiWrapper(mlflow.pyfunc.PythonModel):
 
 
 # COMMAND ----------
+
 X_train = train_set[num_features + ["pickup_zip"]]
 X_test = test_set[num_features + ["pickup_zip"]]
 
 
 # COMMAND ----------
+
 models = [model_A, model_B]
 wrapped_model = NYCTaxiWrapper(models)  # we pass the loaded models to the wrapper
 example_input = X_test.iloc[0:1]  # Select the first row for prediction as example
@@ -249,6 +253,7 @@ example_prediction = wrapped_model.predict(
 print("Example Prediction:", example_prediction)
 
 # COMMAND ----------
+
 mlflow.set_experiment(experiment_name="/Shared/mlops_course_annika-ab-testing")
 model_name = f"{catalog_name}.{schema_name}.nyctaxi_model_pyfunc_ab_test" 
 
@@ -273,6 +278,7 @@ model_version = mlflow.register_model(
 )
 
 # COMMAND ----------
+
 model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{model_version.version}")
 
 # Run prediction
