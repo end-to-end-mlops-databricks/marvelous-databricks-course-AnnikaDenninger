@@ -94,8 +94,8 @@ host = spark.conf.get("spark.databricks.workspaceUrl")
 # Excluding "trip_distance" because it will be taken from feature look up
 required_columns = [
     "pickup_zip",
-    'tpep_pickup_datetime', 
-    'tpep_dropoff_datetime', 
+    #'tpep_pickup_datetime', 
+    #'tpep_dropoff_datetime', 
     'dropoff_zip'
 ]
 
@@ -118,7 +118,7 @@ start_time = time.time()
 
 model_serving_endpoint = f"https://{host}/serving-endpoints/nyctaxi-model-serving-fe/invocations"
 
-# THIS DOE NOT RUN BECAUSE I HAVE TIMESTAMPS AS AN INPUT AND IT ONLY ACCEPTS STRINGS AND INTEGERS!!!!
+# THIS DOES NOT RUN BECAUSE I HAVE TIMESTAMPS AS AN INPUT AND IT ONLY ACCEPTS STRINGS AND INTEGERS!!!!
 # TypeError: Object of type Timestamp is not JSON serializable
 response = requests.post(
     f"{model_serving_endpoint}",

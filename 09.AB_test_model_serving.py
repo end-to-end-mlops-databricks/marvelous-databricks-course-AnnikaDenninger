@@ -304,7 +304,7 @@ workspace.serving_endpoints.create(
                 entity_name=f"{catalog_name}.{schema_name}.nyctaxi_model_pyfunc_ab_test", 
                 scale_to_zero_enabled=True,
                 workload_size="Small",
-                entity_version=model_version,
+                entity_version=2,
             )
         ]
     ),
@@ -324,8 +324,8 @@ host = spark.conf.get("spark.databricks.workspaceUrl")
 
 required_columns = [
     "pickup_zip",
-    'tpep_pickup_datetime', 
-    'tpep_dropoff_datetime', 
+    #'tpep_pickup_datetime', 
+    #'tpep_dropoff_datetime', 
     'dropoff_zip'
 ]
 
@@ -353,3 +353,7 @@ execution_time = end_time - start_time
 print("Response status:", response.status_code)
 print("Reponse text:", response.text)
 print("Execution time:", execution_time, "seconds")
+
+# COMMAND ----------
+
+
