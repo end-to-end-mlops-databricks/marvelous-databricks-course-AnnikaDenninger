@@ -1,0 +1,27 @@
+catalog_name: sandbox
+schema_name: sb_adan
+
+parameters:
+  learning_rate: 0.01
+  n_estimators: 1000
+  max_depth: 6
+
+num_features:
+  - trip_distance
+
+cat_features:
+  - pickup_zip
+  - dropoff_zip
+
+target: fare_amount
+
+id_col: pickup_zip
+
+mlflow_experiment_name: /Shared/mlops_course_annika
+
+ab_test:
+  learning_rate_a: 0.02
+  learning_rate_b: 0.02
+  n_estimators: 1000
+  max_depth_a: 6
+  max_depth_b: 10
