@@ -24,7 +24,7 @@ from pyspark.sql import SparkSession
 import yaml
 from databricks.sdk import WorkspaceClient
 import time
-from house_price.config import ProjectConfig
+from nyctaxi.config import ProjectConfig
 
 workspace = WorkspaceClient()
 
@@ -49,14 +49,14 @@ catalog_name = config.catalog_name
 schema_name = config.schema_name
 
 # Load source_data table
-source_data = spark.table(f"{catalog_name}.{schema_name}.source_data")
+source_data = spark.table(f"{catalog_name}.{schema_name}.source_data_an")
 
 # Get max update timestamps from existing data
-max_train_timestamp = spark.table(f"{catalog_name}.{schema_name}.train_set") \
+max_train_timestamp = spark.table(f"{catalog_name}.{schema_name}.train_set_an") \
     .select(spark_max("update_timestamp_utc").alias("max_update_timestamp")) \
     .collect()[0]["max_update_timestamp"]
 
-max_test_timestamp = spark.table(f"{catalog_name}.{schema_name}.test_set") \
+max_test_timestamp = spark.table(f"{catalog_name}.{schema_name}.test_set_an") \
     .select(spark_max("update_timestamp_utc").alias("max_update_timestamp")) \
     .collect()[0]["max_update_timestamp"]
 
@@ -69,8 +69,8 @@ new_data = source_data.filter(col("update_timestamp_utc") > latest_timestamp)
 new_data_train, new_data_test = new_data.randomSplit([0.8, 0.2], seed=42)
 
 # Update train_set and test_set tables
-new_data_train.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.train_set")
-new_data_test.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.test_set")
+new_data_train.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.train_set_an_new")
+new_data_test.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.test_set_an_new")
 
 # Verify affected rows count for train and test
 affected_rows_train = new_data_train.count()
@@ -81,21 +81,21 @@ if affected_rows_train > 0 or affected_rows_test > 0 :
     spark.sql(f"""
         WITH max_timestamp AS (
             SELECT MAX(update_timestamp_utc) AS max_update_timestamp
-            FROM {catalog_name}.{schema_name}.train_set
+            FROM {catalog_name}.{schema_name}.train_set_an_new
         )
-        INSERT INTO {catalog_name}.{schema_name}.house_features
-        SELECT Id, OverallQual, GrLivArea, GarageCars
-        FROM {catalog_name}.{schema_name}.train_set
+        INSERT INTO {catalog_name}.{schema_name}.features_an
+        SELECT pickup_zip, trip_distance
+        FROM {catalog_name}.{schema_name}.train_set_an_new
         WHERE update_timestamp_utc == (SELECT max_update_timestamp FROM max_timestamp)
 """)
     spark.sql(f"""
         WITH max_timestamp AS (
             SELECT MAX(update_timestamp_utc) AS max_update_timestamp
-            FROM {catalog_name}.{schema_name}.test_set
+            FROM {catalog_name}.{schema_name}.test_set_an_new
         )
-        INSERT INTO {catalog_name}.{schema_name}.house_features
-        SELECT Id, OverallQual, GrLivArea, GarageCars
-        FROM {catalog_name}.{schema_name}.test_set
+        INSERT INTO {catalog_name}.{schema_name}.features_an
+        SELECT pickup_zip, trip_distance
+        FROM {catalog_name}.{schema_name}.test_set_an_new
         WHERE update_timestamp_utc == (SELECT max_update_timestamp FROM max_timestamp)
 """)
     refreshed = 1
