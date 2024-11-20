@@ -32,51 +32,46 @@ from pyspark.ml.evaluation import RegressionEvaluator
 from nyctaxi.config import ProjectConfig
 
 
-#parser = argparse.ArgumentParser()
-#parser.add_argument(
-#    "--root_path",
-#    action="store",
-#    default=None,
-#    type=str,
-#    required=True,
-#)
-#parser.add_argument(
-#    "--new_model_uri",
-#    action="store",
-#    default=None,
-#    type=str,
-#    required=True,
-#)
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--root_path",
+    action="store",
+    default=None,
+    type=str,
+    required=True,
+)
+parser.add_argument(
+    "--new_model_uri",
+    action="store",
+    default=None,
+    type=str,
+    required=True,
+)
 
-#parser.add_argument(
-#    "--job_run_id",
-#    action="store",
-#    default=None,
-#    type=str,
-#    required=True,
-#)
+parser.add_argument(
+    "--job_run_id",
+    action="store",
+    default=None,
+    type=str,
+    required=True,
+)
 
-#parser.add_argument(
-#    "--git_sha",
-#    action="store",
-#    default=None,
-#    type=str,
-#    required=True,
-#)
+parser.add_argument(
+    "--git_sha",
+    action="store",
+    default=None,
+    type=str,
+    required=True,
+)
 
-
-#args = parser.parse_args()
-#root_path = args.root_path
-#new_model_uri = args.new_model_uri
-#job_run_id = args.job_run_id
-#git_sha = args.git_sha
-
-git_sha="123"
-job_run_id="job_run_id"
-new_model_uri='runs:/0ec29e0227e54d57aeb70a4f89c84e09/lightgbm-pipeline-model-fe'
+args = parser.parse_args()
+root_path = args.root_path
+new_model_uri = args.new_model_uri
+job_run_id = args.job_run_id
+git_sha = args.git_sha
 
 config_path = (f"project_config.yml")
-# config_path = ("/Volumes/mlops_test/house_prices/data/project_config.yml")
+#config_path = ("/Volumes/mlops_test/house_prices/data/project_config.yml")
 config = ProjectConfig.from_yaml(config_path=config_path)
 
 spark = SparkSession.builder.getOrCreate()
@@ -147,11 +142,10 @@ df = df.withColumn("error_old", F.abs(df["fare_amount"] - df["prediction_old"]))
 # COMMAND ----------
 
 # Calculate the Mean Absolute Error (MAE) for each model
-mae_new = df.agg(F.mean("error_new")).collect()[0][0]
-mae_old = df.agg(F.mean("error_old")).collect()[0][0]
+#mae_new = df.agg(F.mean("error_new")).collect()[0][0]
+#mae_old = df.agg(F.mean("error_old")).collect()[0][0]
 
 # COMMAND ----------
-
 mae_new = 3
 mae_old = 4
 

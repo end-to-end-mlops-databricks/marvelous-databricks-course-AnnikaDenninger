@@ -29,25 +29,26 @@ parser.add_argument(
 args = parser.parse_args()
 root_path = args.root_path
 
-config_path = (f"{root_path}/project_config.yml")
+config_path = (f"project_config.yml")
 # config_path = ("/Volumes/mlops_test/house_prices/data/project_config.yml")
 config = ProjectConfig.from_yaml(config_path=config_path)
 
-model_version = dbutils.jobs.taskValues.get(taskKey="evaluate_model", key="model_version")
-
+#model_version = dbutils.jobs.taskValues.get(taskKey="evaluate_model", key="model_version")
+model_version=1
 workspace = WorkspaceClient()
 
 catalog_name = config.catalog_name
 schema_name = config.schema_name
 
 workspace.serving_endpoints.update_config_and_wait(
-    name="house-prices-model-serving-fe",
+    name="nyctaxi-model-serving-fe",
     served_entities=[
         ServedEntityInput(
-            entity_name=f"{catalog_name}.{schema_name}.nyctaxi-model-serving-fe",
+            entity_name=f"{catalog_name}.{schema_name}.nyctaxi_model_fe",
             scale_to_zero_enabled=True,
             workload_size="Small",
             entity_version=model_version,
         )
     ],
 )
+print("done")

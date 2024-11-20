@@ -30,35 +30,33 @@ from nyctaxi.config import ProjectConfig
 import pandas as pd
 
 
-#parser = argparse.ArgumentParser()
-#parser.add_argument(
-    #"--root_path",
-    #action="store",
-    #default=None,
-    #type=str,
-    #required=True,
-#)
-#parser.add_argument(
-    #"--git_sha",
-    #action="store",
-    #default=None,
-    #type=str,
-    #required=True,
-#)
-#parser.add_argument(
-    #"--job_run_id",
-    #action="store",
-    #default=None,
-    #type=str,
-    #required=True,
-#)
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--root_path",
+    action="store",
+    default=None,
+    type=str,
+    required=True,
+)
+parser.add_argument(
+    "--git_sha",
+    action="store",
+    default=None,
+    type=str,
+    required=True,
+)
+parser.add_argument(
+    "--job_run_id",
+    action="store",
+    default=None,
+    type=str,
+    required=True,
+)
 
-#args = parser.parse_args()
-#root_path = args.root_path
-#git_sha = args.git_sha
-git_sha="123"
-#job_run_id = args.job_run_id
-job_run_id="job_run_id"
+args = parser.parse_args()
+root_path = args.root_path
+git_sha = args.git_sha
+job_run_id = args.job_run_id
 
 #config_path = (f"{root_path}/project_config.yml")
 config_path = (f"project_config.yml")
@@ -126,11 +124,6 @@ training_set = fe.create_training_set(
 training_df = training_set.load_df().toPandas()
 
 # Calculate travel time for test set
-#test_set = test_set.withColumn(
-    #"travel_time",
-    #(F.unix_timestamp(F.col("tpep_dropoff_datetime")) - F.unix_timestamp(F.col("tpep_pickup_datetime"))) / 60
-#)
-
 test_set["travel_time"] = (pd.to_datetime(test_set["tpep_dropoff_datetime"]) - pd.to_datetime(test_set["tpep_pickup_datetime"])).dt.total_seconds() / 60
 
 
