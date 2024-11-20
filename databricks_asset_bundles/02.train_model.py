@@ -1,5 +1,4 @@
 # Databricks notebook source
-
 """
 This script trains a LightGBM model for NYC Taxi Dataset with feature engineering.
 Key functionality:
@@ -28,6 +27,8 @@ from sklearn.preprocessing import OneHotEncoder
 from datetime import datetime
 from databricks.feature_engineering import FeatureFunction, FeatureLookup
 from nyctaxi.config import ProjectConfig
+import pandas as pd
+
 
 #parser = argparse.ArgumentParser()
 #parser.add_argument(
@@ -72,6 +73,9 @@ fe = feature_engineering.FeatureEngineeringClient()
 mlflow.set_registry_uri("databricks-uc")
 mlflow.set_tracking_uri("databricks")
 
+
+# COMMAND ----------
+
 # Extract configuration details
 num_features = config.num_features
 cat_features = config.cat_features
@@ -88,6 +92,13 @@ function_name = f"{catalog_name}.{schema_name}.calculate_travel_time"
 # Load training and test sets
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").drop("trip_distance")
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an").toPandas()
+
+# COMMAND ----------
+
+train_set = train_set.sample(fraction=0.1, seed=42)
+test_set = test_set.sample(frac=0.1, random_state=42)
+
+# COMMAND ----------
 
 # Feature engineering setup
 training_set = fe.create_training_set(
@@ -109,20 +120,30 @@ training_set = fe.create_training_set(
 )
 
 
+# COMMAND ----------
+
 # Load feature-engineered DataFrame
 training_df = training_set.load_df().toPandas()
 
 # Calculate travel time for test set
-test_set = test_set.withColumn(
-    "travel_time",
-    (F.unix_timestamp(F.col("tpep_dropoff_datetime")) - F.unix_timestamp(F.col("tpep_pickup_datetime"))) / 60
-)
+#test_set = test_set.withColumn(
+    #"travel_time",
+    #(F.unix_timestamp(F.col("tpep_dropoff_datetime")) - F.unix_timestamp(F.col("tpep_pickup_datetime"))) / 60
+#)
+
+test_set["travel_time"] = (pd.to_datetime(test_set["tpep_dropoff_datetime"]) - pd.to_datetime(test_set["tpep_pickup_datetime"])).dt.total_seconds() / 60
+
+
+
+# COMMAND ----------
 
 # Split features and target
 X_train = training_df[num_features + ["travel_time"]]
 y_train = training_df[target]
 X_test = test_set[num_features + ["travel_time"]]
 y_test = test_set[target]
+
+# COMMAND ----------
 
 # Setup preprocessing and model pipeline
 #preprocessor = ColumnTransformer(
@@ -131,6 +152,8 @@ y_test = test_set[target]
 pipeline = Pipeline(
     steps=[("regressor", LGBMRegressor(**parameters))]
 )
+
+# COMMAND ----------
 
 mlflow.set_experiment(experiment_name="/Shared/mlops_course_annika-fe")
 
@@ -149,7 +172,7 @@ with mlflow.start_run(tags={"branch": "week5",
     print(f"Mean Absolute Error: {mae}")
     print(f"R2 Score: {r2}")
 
-    # Log model parameters, metrics, and model
+      # Log model parameters, metrics, and model
     mlflow.log_param("model_type", "LightGBM with preprocessing")
     mlflow.log_params(parameters)
     mlflow.log_metric("mse", mse)
@@ -165,6 +188,9 @@ with mlflow.start_run(tags={"branch": "week5",
         training_set=training_set,
         signature=signature,
     )
+
+# COMMAND ----------
+
 
 model_uri=f'runs:/{run_id}/lightgbm-pipeline-model-fe'
 dbutils.jobs.taskValues.set(key="new_model_uri", value=model_uri)
