@@ -12,6 +12,8 @@ class ProjectConfig(BaseModel):
     ab_test: Dict[str, Any]  # Dictionary to hold A/B test parameters
     mlflow_experiment_name: str
     id_col: str
+    pipeline_id: str
+
 
     @classmethod
     def from_yaml(cls, config_path: str):

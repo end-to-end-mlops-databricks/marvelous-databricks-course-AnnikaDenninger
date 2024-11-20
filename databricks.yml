@@ -123,12 +123,12 @@ targets:
   prod:
     default: true
     workspace:
-      host: https://dbc-643c4c2b-d6c9.cloud.databricks.com # WHAT IS THE RIGHT HOST HERE?
+      host: https://adb-6130442328907134.14.azuredatabricks.net # WHAT IS THE RIGHT HOST HERE?
       root_path: ${var.root_path}
   
   dev:
     mode: development
     workspace:
-      host: https://dbc-643c4c2b-d6c9.cloud.databricks.com # WHAT IS THE RIGHT HOST HERE?
+      host: https://adb-6130442328907134.14.azuredatabricks.net # WHAT IS THE RIGHT HOST HERE?
       root_path: /Workspace/Users/basak@marvelousmlops.io/.bundle/${bundle.target}/${bundle.name} # WHAT IS THE RIGHT CODE HERE?
     

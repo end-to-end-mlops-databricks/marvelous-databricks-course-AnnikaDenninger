@@ -9,7 +9,6 @@ Key functionality:
 - Handles feature lookups and custom feature functions
 - Outputs model URI for downstream tasks
 
-The model uses both numerical and categorical features, including a custom calculated house age feature.
 """
 
 from databricks import feature_engineering
@@ -28,35 +27,38 @@ from datetime import datetime
 from databricks.feature_engineering import FeatureFunction, FeatureLookup
 from nyctaxi.config import ProjectConfig
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--root_path",
-    action="store",
-    default=None,
-    type=str,
-    required=True,
-)
-parser.add_argument(
-    "--git_sha",
-    action="store",
-    default=None,
-    type=str,
-    required=True,
-)
-parser.add_argument(
-    "--job_run_id",
-    action="store",
-    default=None,
-    type=str,
-    required=True,
-)
+#parser = argparse.ArgumentParser()
+#parser.add_argument(
+    #"--root_path",
+    #action="store",
+    #default=None,
+    #type=str,
+    #required=True,
+#)
+#parser.add_argument(
+    #"--git_sha",
+    #action="store",
+    #default=None,
+    #type=str,
+    #required=True,
+#)
+#parser.add_argument(
+    #"--job_run_id",
+    #action="store",
+    #default=None,
+    #type=str,
+    #required=True,
+#)
 
-args = parser.parse_args()
-root_path = args.root_path
-git_sha = args.git_sha
-job_run_id = args.job_run_id
+#args = parser.parse_args()
+#root_path = args.root_path
+#git_sha = args.git_sha
+git_sha="123"
+#job_run_id = args.job_run_id
+job_run_id="job_run_id"
 
-config_path = (f"{root_path}/project_config.yml")
+#config_path = (f"{root_path}/project_config.yml")
+config_path = (f"project_config.yml")
 # config_path = ("/Volumes/mlops_test/house_prices/data/project_config.yml")
 config = ProjectConfig.from_yaml(config_path=config_path)
 

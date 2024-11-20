@@ -21,10 +21,9 @@ train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").toPandas()
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an").toPandas()
 combined_set = pd.concat([train_set, test_set], ignore_index=True)
 num_rows = len(combined_set)
-combined_set["Id"] = np.arange(num_rows)
 
 print(combined_set)
-existing_ids = set(int(id) for id in combined_set['Id'])
+#existing_ids = set(int(id) for id in combined_set['Id'])
 
 # Define function to create synthetic data without random state
 def create_synthetic_data(df, num_rows=100):
@@ -51,13 +50,13 @@ def create_synthetic_data(df, num_rows=100):
         else:
             synthetic_data[column] = np.random.choice(df[column], num_rows)
     
-    new_ids = []
-    i = max(existing_ids) + 1 if existing_ids else 1
-    while len(new_ids) < num_rows:
-        if i not in existing_ids:
-            new_ids.append(str(i))  # Convert numeric ID to string
-        i += 1
-    synthetic_data['Id'] = new_ids
+    #new_ids = []
+    #i = max(existing_ids) + 1 if existing_ids else 1
+    #while len(new_ids) < num_rows:
+        #if i not in existing_ids:
+            #new_ids.append(str(i))  # Convert numeric ID to string
+        #i += 1
+    #synthetic_data['Id'] = new_ids
 
     return synthetic_data
 
@@ -74,7 +73,6 @@ predefined_schema = StructType([
     StructField("pickup_zip", IntegerType(), True),
     StructField("dropoff_zip", IntegerType(), True),
     StructField("update_timestamp_utc", TimestampType(), True),
-    StructField("Id", StringType(), True)
 ])
 
 # Create the table if it does not exist
