@@ -1,3 +1,5 @@
+# Databricks notebook source
+
 """
 This script trains a LightGBM model for NYC Taxi Dataset with feature engineering.
 Key functionality:
