@@ -140,7 +140,6 @@ targets:
 
 bundle:
   name: marvelous-databricks-course-AnnikaDenninger
-  # cluster_id: 1014-134439-1sgb0b2m
 
 targets:
   dev:
@@ -195,7 +194,6 @@ resources:
       tasks:
         - task_key: "preprocessing"
           job_cluster_key: "nyc-taxi-cluster"
-          # existing_cluster_id: 1014-134439-1sgb0b2m
           spark_python_task:
             python_file: "databricks_asset_bundles/01.preprocess.py"
             parameters:
@@ -215,7 +213,6 @@ resources:
             - task_key: "if_refreshed"
               outcome: "true"
           job_cluster_key: "nyc-taxi-cluster"
-          #existing_cluster_id: 1014-134439-1sgb0b2m
           spark_python_task:
             python_file: "databricks_asset_bundles/02.train_model.py"
             parameters:
@@ -231,7 +228,6 @@ resources:
           depends_on: 
             - task_key: "train_model"
           job_cluster_key: "nyc-taxi-cluster"
-          # existing_cluster_id: 1014-134439-1sgb0b2m
           spark_python_task:
             python_file: "databricks_asset_bundles/03.evaluate_model.py"
             parameters:
@@ -257,7 +253,6 @@ resources:
             - task_key: "model_update"
               outcome: "true"
           job_cluster_key: "nyc-taxi-cluster"
-          # existing_cluster_id: 1014-134439-1sgb0b2m
           spark_python_task:
             python_file: "databricks_asset_bundles/04.deploy_model.py"
             parameters:
