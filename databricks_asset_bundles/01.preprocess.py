@@ -42,7 +42,7 @@ root_path = args.root_path
 #config_path = (f"{root_path}/project_config.yml")
 config_path="project_config.yml"
 config = ProjectConfig.from_yaml(config_path=config_path)
-pipeline_id = config.pipeline_id
+pipeline_id = config.pipeline_id # delta live table pipeline id 
 
 spark = SparkSession.builder.getOrCreate()
 
@@ -116,6 +116,7 @@ if affected_rows_train > 0 or affected_rows_test > 0 :
             print(f"Pipeline is in {state} state.")
         time.sleep(30)
 else:
-    refreshed = 0
+    #refreshed = 0
+    refreshed = 1
 
 dbutils.jobs.taskValues.set(key="refreshed", value=refreshed)
