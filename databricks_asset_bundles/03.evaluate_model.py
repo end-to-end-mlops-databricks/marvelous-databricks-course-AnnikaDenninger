@@ -1,4 +1,4 @@
-# Databricks notebook source
+
 """
 This script evaluates and compares a new NYC taxi prediction model against the currently deployed model.
 Key functionality:

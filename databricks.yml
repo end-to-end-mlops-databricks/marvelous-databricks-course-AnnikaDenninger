@@ -10,7 +10,7 @@ targets:
     mode: development
     default: true
     workspace:
-      host: https://adb-6130442328907134.14.azuredatabricks.net
+      host: https://adb-6130442328907134.14.azuredatabricks.net/
 
 variables:
   root_path:
