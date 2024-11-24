@@ -134,6 +134,10 @@ training_df = training_set.load_df().toPandas()
 
 # COMMAND ----------
 
+training_df.display()
+
+# COMMAND ----------
+
 # Split features and target
 X_train = training_df[num_features]
 y_train = training_df[target]
@@ -187,7 +191,7 @@ with mlflow.start_run(tags={"branch": "week2",
         model=pipeline,
         flavor=mlflow.sklearn,
         artifact_path="lightgbm-pipeline-model-fe",
-        training_set=training_set,
+        training_set=X_train,
         signature=signature,
     )
 

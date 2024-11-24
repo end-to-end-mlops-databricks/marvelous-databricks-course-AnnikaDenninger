@@ -2,6 +2,7 @@
 # MAGIC %pip install /Volumes/main/default/file_exchange/denninger/nyc_taxi-0.0.1-py3-none-any.whl
 
 # COMMAND ----------
+
 # MAGIC %restart_python
 
 # COMMAND ----------
@@ -33,6 +34,10 @@ schema_name = config.schema_name
 
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").toPandas()
 
+
+
+# COMMAND ----------
+
 workspace.serving_endpoints.create(
     name="nyctaxi-model-serving",
     config=EndpointCoreConfigInput(
@@ -41,13 +46,13 @@ workspace.serving_endpoints.create(
                 entity_name=f"{catalog_name}.{schema_name}.nyctaxi_model_basic",
                 scale_to_zero_enabled=True,
                 workload_size="Small",
-                entity_version=3,
+                entity_version=4,
             )
         ],
     # Optional if only 1 entity is served
     traffic_config=TrafficConfig(
         routes=[
-            Route(served_model_name="nyctaxi_model_basic-3",
+            Route(served_model_name="nyctaxi_model_basic-4",
                   traffic_percentage=100)
         ]
         ),
@@ -79,6 +84,7 @@ sampled_records = train_set[required_columns].sample(n=1000, replace=True).to_di
 dataframe_records = [[record] for record in sampled_records]
 
 # COMMAND ----------
+
 dataframe_records
 
 # COMMAND ----------
@@ -93,6 +99,7 @@ Example
 """
 
 # COMMAND ----------
+
 start_time = time.time()
 
 model_serving_endpoint = (
@@ -160,3 +167,7 @@ average_latency = sum(latencies) / len(latencies)
 
 print("\nTotal execution time:", total_execution_time, "seconds")
 print("Average latency per request:", average_latency, "seconds")
+
+# COMMAND ----------
+
+

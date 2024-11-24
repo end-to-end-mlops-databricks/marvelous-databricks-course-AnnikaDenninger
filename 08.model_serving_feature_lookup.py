@@ -58,7 +58,7 @@ online_table_pipeline = workspace.online_tables.create(name=online_table_name, s
 # COMMAND ----------
 
 workspace.serving_endpoints.create(
-    name="nyctaxi-model-serving-fe-2",
+    name="nyctaxi-model-serving-fe",
     config=EndpointCoreConfigInput(
         served_entities=[
             ServedEntityInput(
@@ -86,18 +86,15 @@ host = spark.conf.get("spark.databricks.workspaceUrl")
 # Excluding "trip_distance" because it will be taken from feature look up
 required_columns = [
     "pickup_zip"
+    #"tpep_pickup_datetime",
+    #"tpep_dropoff_datetime"
 ]
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an")
-train_set = train_set.select(required_columns)
 train_set = train_set.sample(fraction=0.05, seed=42)
 train_set = train_set.toPandas()
 
 sampled_records = train_set[required_columns].sample(n=1000, replace=True).to_dict(orient="records")
 dataframe_records = [[record] for record in sampled_records]
-
-# COMMAND ----------
-
-train_set.dtypes
 
 # COMMAND ----------
 
@@ -107,7 +104,7 @@ dataframe_records[0]
 
 start_time = time.time()
 
-model_serving_endpoint = f"https://{host}/serving-endpoints/nyctaxi-model-serving-fe-2/invocations"
+model_serving_endpoint = f"https://{host}/serving-endpoints/nyctaxi-model-serving-fe/invocations"
 
 # WATCH OUT - ONLY ACCEPTS STRINGS AND INTEGERS!!!!
 response = requests.post(

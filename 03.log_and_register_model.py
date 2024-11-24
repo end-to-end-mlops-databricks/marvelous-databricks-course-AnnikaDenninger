@@ -10,11 +10,11 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import mlflow
 from mlflow.models import infer_signature
 
-#mlflow.set_tracking_uri("databricks")
-mlflow.set_tracking_uri("databricks://adb-6130442328907134")
+mlflow.set_tracking_uri("databricks")
+#mlflow.set_tracking_uri("databricks://adb-6130442328907134")
 
-#mlflow.set_registry_uri('databricks-uc') 
-mlflow.set_registry_uri('databricks-uc://adb-6130442328907134') # It must be -uc for registering models to Unity Catalog
+mlflow.set_registry_uri('databricks-uc') 
+#mlflow.set_registry_uri('databricks-uc://adb-6130442328907134') # It must be -uc for registering models to Unity Catalog
 
 # COMMAND ----------
 
@@ -44,6 +44,7 @@ mlflow_experiment_name = config.mlflow_experiment_name
 print("Configuration loaded.")
 
 # COMMAND ----------
+
 spark = SparkSession.builder.getOrCreate()
 
 # Load training and testing sets from Databricks tables
@@ -58,6 +59,7 @@ X_test = test_set[num_features]
 y_test = test_set[target]
 
 # COMMAND ----------
+
 # Define the preprocessor for categorical features
 #preprocessor = ColumnTransformer(
     #transformers=[('cat', OneHotEncoder(handle_unknown='ignore'), cat_features)], 
@@ -72,6 +74,7 @@ pipeline = Pipeline(steps=[
 
 
 # COMMAND ----------
+
 mlflow.set_experiment(experiment_name=mlflow_experiment_name)
 git_sha = "blub"
 
@@ -102,10 +105,10 @@ with mlflow.start_run(
     mlflow.log_metric("r2_score", r2)
     signature = infer_signature(model_input=X_train, model_output=y_pred)
 
-    dataset = mlflow.data.from_spark(
-    train_set_spark, table_name=f"{catalog_name}.{schema_name}.train_set_an",
-    version="0")
-    mlflow.log_input(dataset, context="training")
+    #dataset = mlflow.data.from_spark(
+    #train_set_spark, table_name=f"{catalog_name}.{schema_name}.train_set_an",
+    #version="0")
+    #mlflow.log_input(dataset, context="training")
     
     mlflow.sklearn.log_model(
         sk_model=pipeline,
@@ -115,16 +118,19 @@ with mlflow.start_run(
 
 
 # COMMAND ----------
+
 model_version = mlflow.register_model(
     model_uri=f'runs:/{run_id}/lightgbm-pipeline-model',
     name=f"{catalog_name}.{schema_name}.nyctaxi_model_basic",
     tags={"git_sha": f"{git_sha}"})
 
 # COMMAND ----------
+
 run = mlflow.get_run(run_id)
 dataset_info = run.inputs.dataset_inputs[0].dataset
 dataset_source = mlflow.data.get_source(dataset_info)
 dataset_source.load()
 
 # COMMAND ----------
+
 print("DONE")
