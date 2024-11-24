@@ -52,28 +52,20 @@ online_table_pipeline = workspace.online_tables.create(name=online_table_name, s
 
 # COMMAND ----------
 
-
-#config = ProjectConfig.from_yaml(config_path="/Volumes/mlops_dev/house_prices/data/project_config.yml")
-
-#catalog_name = config.catalog_name
-#schema_name = config.schema_name
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC ### Create endpoint
 
 # COMMAND ----------
 
 workspace.serving_endpoints.create(
-    name="nyctaxi-model-serving-fe",
+    name="nyctaxi-model-serving-fe-2",
     config=EndpointCoreConfigInput(
         served_entities=[
             ServedEntityInput(
                 entity_name=f"{catalog_name}.{schema_name}.nyctaxi_model_fe",
                 scale_to_zero_enabled=True,
                 workload_size="Small",
-                entity_version=1,
+                entity_version=5,
             )
         ]
     ),
@@ -93,13 +85,12 @@ host = spark.conf.get("spark.databricks.workspaceUrl")
 
 # Excluding "trip_distance" because it will be taken from feature look up
 required_columns = [
-    "pickup_zip",
-    #'tpep_pickup_datetime', 
-    #'tpep_dropoff_datetime', 
-    'dropoff_zip'
+    "pickup_zip"
 ]
-
-train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").toPandas()
+train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an")
+train_set = train_set.select(required_columns)
+train_set = train_set.sample(fraction=0.05, seed=42)
+train_set = train_set.toPandas()
 
 sampled_records = train_set[required_columns].sample(n=1000, replace=True).to_dict(orient="records")
 dataframe_records = [[record] for record in sampled_records]
@@ -116,10 +107,9 @@ dataframe_records[0]
 
 start_time = time.time()
 
-model_serving_endpoint = f"https://{host}/serving-endpoints/nyctaxi-model-serving-fe/invocations"
+model_serving_endpoint = f"https://{host}/serving-endpoints/nyctaxi-model-serving-fe-2/invocations"
 
-# THIS DOES NOT RUN BECAUSE I HAVE TIMESTAMPS AS AN INPUT AND IT ONLY ACCEPTS STRINGS AND INTEGERS!!!!
-# TypeError: Object of type Timestamp is not JSON serializable
+# WATCH OUT - ONLY ACCEPTS STRINGS AND INTEGERS!!!!
 response = requests.post(
     f"{model_serving_endpoint}",
     headers={"Authorization": f"Bearer {token}"},

@@ -155,7 +155,7 @@ pipeline = Pipeline(
 # COMMAND ----------
 
 # Set and start MLflow experiment
-mlflow.set_experiment(experiment_name="/Shared/mlops_course_annika-fe")
+mlflow.set_experiment(experiment_name="/Shared/mlops_course_annika-fe-2")
 git_sha = "blub"
 
 # COMMAND ----------
