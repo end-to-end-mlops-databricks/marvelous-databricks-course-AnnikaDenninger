@@ -43,7 +43,6 @@ test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an") \
 
 
 # COMMAND ----------
-print("Does token work?")
 
 token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()
 host = spark.conf.get("spark.databricks.workspaceUrl")
@@ -79,19 +78,19 @@ def send_request_https(dataframe_record):
     )
     return response
 
-# # 2. Using workspace client
-# def send_request_workspace(dataframe_record):
-#     response = workspace.serving_endpoints.query(
-#         name="nyctaxi-model-serving-fe",
-#         dataframe_records=[dataframe_record]
-#     )
-#     return response
+# 2. Using workspace client
+def send_request_workspace(dataframe_record):
+    response = workspace.serving_endpoints.query(
+        name="nyctaxi-model-serving-fe",
+        dataframe_records=[dataframe_record]
+    )
+    return response
 
 
 # COMMAND ----------
 
 # Loop over test records and send requests for 20 minutes
-end_time = datetime.datetime.now() + datetime.timedelta(minutes=20)
+end_time = datetime.datetime.now() + datetime.timedelta(minutes=2)
 for index, record in enumerate(itertools.cycle(test_set_records)):
     if datetime.datetime.now() >= end_time:
         break
@@ -104,7 +103,7 @@ for index, record in enumerate(itertools.cycle(test_set_records)):
 # COMMAND ----------
 
 # Loop over normal records and send requests for 10 minutes
-end_time = datetime.datetime.now() + datetime.timedelta(minutes=20)
+end_time = datetime.datetime.now() + datetime.timedelta(minutes=2)
 for index, record in enumerate(itertools.cycle(sampled_normal_records)):
     if datetime.datetime.now() >= end_time:
         break
@@ -118,7 +117,7 @@ for index, record in enumerate(itertools.cycle(sampled_normal_records)):
 # COMMAND ----------
 
 # Loop over skewed records and send requests for 30 minutes
-end_time = datetime.datetime.now() + datetime.timedelta(minutes=30)
+end_time = datetime.datetime.now() + datetime.timedelta(minutes=3)
 for index, record in enumerate(itertools.cycle(sampled_skewed_records)):
     if datetime.datetime.now() >= end_time:
         break
