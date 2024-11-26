@@ -37,11 +37,11 @@ pipeline_id = config.pipeline_id
 print("Load data sets")
 # Ensure 'Id' column is cast to string in Spark before converting to Pandas
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an") \
-                 .select(col("pickup_zip").cast("string"), col("trip_distance").cast("integer")) \
+                 .select(col("pickup_zip").cast("string"), col("trip_distance").cast("integer"), col("fare_amount").cast("integer")) \
                  .toPandas()
 
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an") \
-                 .select(col("pickup_zip").cast("string"), col("trip_distance").cast("integer")) \
+                 .select(col("pickup_zip").cast("string"), col("trip_distance").cast("integer"), col("fare_amount").cast("integer")) \
                  .toPandas()
 
 # COMMAND ----------
