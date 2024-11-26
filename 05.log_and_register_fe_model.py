@@ -187,20 +187,41 @@ with mlflow.start_run(tags={"branch": "week2",
     signature = infer_signature(model_input=X_train, model_output=y_pred)
 
     # Log model with feature engineering
-    fe.log_model(
-        model=pipeline,
-        flavor=mlflow.sklearn,
-        artifact_path="lightgbm-pipeline-model-fe",
-        training_set=X_train,
-        signature=signature,
+    # fe.log_model(
+    #     model=pipeline,
+    #     flavor=mlflow.sklearn,
+    #     artifact_path="lightgbm-pipeline-model-fe",
+    #     training_set=X_train,
+    #     signature=signature,
+    # )
+    mlflow.sklearn.log_model(
+        sk_model=pipeline,
+        artifact_path="lightgbm-pipeline-model",
+        signature=signature
     )
 
 # COMMAND ----------
 
 mlflow.register_model(
-    model_uri=f'runs:/{run_id}/lightgbm-pipeline-model-fe',
+    model_uri=f'runs:/{run_id}/lightgbm-pipeline-model',
     name=f"{catalog_name}.{schema_name}.nyctaxi_model_fe")
     
+
+# COMMAND ----------
+
+signature
+
+# COMMAND ----------
+
+X_train
+
+# COMMAND ----------
+
+y_pred
+
+# COMMAND ----------
+
+parameters
 
 # COMMAND ----------
 

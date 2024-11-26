@@ -85,7 +85,8 @@ host = spark.conf.get("spark.databricks.workspaceUrl")
 
 # Excluding "trip_distance" because it will be taken from feature look up
 required_columns = [
-    "pickup_zip"
+    "pickup_zip",
+    "trip_distance"
     #"tpep_pickup_datetime",
     #"tpep_dropoff_datetime"
 ]
