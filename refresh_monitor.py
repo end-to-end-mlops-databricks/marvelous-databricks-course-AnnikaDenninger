@@ -59,7 +59,6 @@ df_final = df_exploded.select(
     F.lit("nyctaxi_model_fe").alias("model_name")
 )
 
-
 test_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an")
 inference_set_normal = spark.table(f"{catalog_name}.{schema_name}.inference_set_normal_an")
 inference_set_skewed = spark.table(f"{catalog_name}.{schema_name}.inference_set_skewed_an")

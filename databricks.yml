@@ -12,6 +12,9 @@ targets:
     workspace:
       host: https://adb-6130442328907134.14.azuredatabricks.net/
 
+include:
+  - bundle_monitoring.yml
+
 variables:
   root_path:
     description: root_path for the target

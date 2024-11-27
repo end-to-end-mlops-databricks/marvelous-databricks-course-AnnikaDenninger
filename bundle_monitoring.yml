@@ -1,0 +1,43 @@
+
+resources:
+  jobs:
+    nyc-taxi-monitor-update: 
+      name: nyc-taxi-monitor-update-workflow 
+      schedule:
+        quartz_cron_expression: "0 0 6 ? * MON"
+        timezone_id: "Europe/Amsterdam"
+        pause_status: ${var.schedule_pause_status}
+      tags:
+        project_name: "nyc-taxi"
+      job_clusters:
+        - job_cluster_key: "nyc-taxi-cluster"
+          new_cluster:
+            spark_version: "15.4.x-scala2.12"
+            spark_env_vars:
+              LOG_AZURE_ACCOUNT_URL: "{{secrets/uni-data-keyvault/adls-account-url-deltalake}}"
+              LOG_AZURE_SAS: "{{secrets/uni-data-keyvault/adls-logs-general-SAStoken}}"
+              PRODUCTION_LANE: dev
+            azure_attributes:
+              first_on_demand: 1
+              availability: SPOT_WITH_FALLBACK_AZURE # if no spot vm is found use normal azure vm
+              spot_bid_max_price: 100 # bit up to 100 percent of normal price for spot vms
+            data_security_mode: "SINGLE_USER"
+            node_type_id: "Standard_E4d_v4"
+            # driver_node_type_id: "Standard_E4d_v4"
+            num_workers: 1
+            policy_id: 30637689B5001B83
+            custom_tags:
+              purpose: ds
+              env: dev
+        
+      tasks:
+        - task_key: "refresh_monitor_table"
+          job_cluster_key: "nyc-taxi-cluster"
+          # existing_cluster_id: 1014-134439-1sgb0b2m
+          spark_python_task:
+            python_file: "refresh_monitor.py"
+            parameters:
+              - "--root_path"
+              - ${var.root_path}
+          libraries:
+           - whl: ./dist/*.whl
